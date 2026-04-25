@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Grocerra</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --saffron:#E8692A;--saffron-pale:#FEF0E7;--gold:#C9952A;--gold-pale:#FDF6E3;
+  --ivory:#FAF7F2;--cream:#F5EFE6;--brown-dark:#2C1810;--brown-mid:#5C3A2E;
+  --green:#2E6B4F;--green-pale:#EAF5EE;--purple:#6B4EAA;--purple-pale:#F3EFFE;
+  --text-primary:#1E0F08;--text-secondary:#5C3A2E;--text-muted:#9B7060;
+  --border:#E8D5C4;--border-strong:#C9A98A;--card-bg:#FFFDF9;--input-bg:#FFF8F3;
+  --shadow:0 2px 12px rgba(44,24,16,0.10);--r:12px;--rs:8px;--rp:999px;
+}
+[data-theme="dark"]{
+  --ivory:#1A0F09;--cream:#221208;--card-bg:#2A1510;--input-bg:#321A0E;
+  --text-primary:#FAF0E6;--text-secondary:#D4A882;--text-muted:#9B7060;
+  --border:#4A2515;--border-strong:#7A4030;--saffron-pale:#3A1A08;
+  --gold-pale:#2A1A05;--green-pale:#0A2018;--purple-pale:#1A1030;
+  --shadow:0 2px 12px rgba(0,0,0,0.35);--brown-dark:#FAF0E6;--brown-mid:#D4A882;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Mukta',sans-serif;background:var(--ivory);color:var(--text-primary);max-width:500px;margin:0 auto;display:flex;flex-direction:column;height:100%}
+body::before{content:'';position:fixed;inset:0;max-width:500px;margin:0 auto;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 30% at 80% 5%,rgba(232,105,42,0.07),transparent 60%),
+             radial-gradient(ellipse 40% 20% at 10% 95%,rgba(201,149,42,0.06),transparent 60%)}
+
+/* HEADER */
+#hdr{background:var(--card-bg);border-bottom:2px solid var(--border);padding:12px 14px 10px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;box-shadow:var(--shadow);flex-shrink:0}
+.hbrand{display:flex;align-items:center;gap:10px}
+.hlogo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--saffron),var(--gold));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(232,105,42,0.35)}
+.btitle{font-family:'Yatra One',cursive;font-size:20px;color:var(--saffron);line-height:1}
+.bsub{font-size:10px;color:var(--text-muted);letter-spacing:1.5px;margin-top:1px}
+.hact{display:flex;gap:7px;align-items:center}
+.btnH{padding:7px 11px;border-radius:var(--rs);border:1.5px solid var(--border-strong);background:transparent;color:var(--text-secondary);font-size:11px;font-weight:600;cursor:pointer;font-family:'Mukta',sans-serif;transition:all .15s;white-space:nowrap}
+.btnH:hover{background:var(--saffron-pale);border-color:var(--saffron);color:var(--saffron)}
+.btnPDF{background:linear-gradient(135deg,var(--saffron),var(--gold));border:none;color:#fff;padding:7px 13px;border-radius:var(--rs);font-size:11px;font-weight:700;cursor:pointer;font-family:'Mukta',sans-serif;display:none;align-items:center;gap:4px}
+
+/* NAV */
+#nav{display:flex;background:var(--card-bg);border-bottom:1.5px solid var(--border);flex-shrink:0}
+.ntab{flex:1;padding:11px 4px;border:none;background:transparent;color:var(--text-muted);font-size:12px;font-weight:500;border-bottom:3px solid transparent;cursor:pointer;font-family:'Mukta',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.ntab.active{color:var(--saffron);border-bottom-color:var(--saffron);font-weight:700}
+.nbadge{background:var(--saffron);color:#fff;border-radius:var(--rp);padding:1px 6px;font-size:10px;font-weight:700;min-width:18px;text-align:center}
+
+/* BODY */
+#body{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 10px 80px;position:relative;z-index:1;-webkit-overflow-scrolling:touch}
+
+/* SEARCH */
+.sw{position:relative;margin-bottom:12px}
+.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:15px;pointer-events:none}
+.sinput{width:100%;padding:10px 12px 10px 34px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-primary);font-size:14px;font-family:'Mukta',sans-serif;outline:none;transition:border-color .15s}
+.sinput:focus{border-color:var(--saffron)}
+.sinput::placeholder{color:var(--text-muted)}
+
+/* SECTION LABEL */
+.slbl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--saffron);margin-bottom:7px;padding-left:2px;display:flex;align-items:center;gap:6px}
+.slbl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* CARD */
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;box-shadow:var(--shadow);overflow:hidden}
+.ci{padding:3px 14px}
+
+/* LIST ROW */
+.lr{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--border);gap:8px}
+.lr:last-child{border-bottom:none}
+.ien{font-size:14px;font-weight:600;color:var(--text-primary);line-height:1.2}
+.ihi{font-size:11px;color:var(--text-muted);line-height:1.2}
+.ibadges{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;align-items:center}
+.badge{display:inline-block;border-radius:var(--rp);padding:2px 8px;font-size:10px;font-weight:700;line-height:1.4}
+.bqty{background:var(--saffron-pale);color:var(--saffron);border:1px solid rgba(232,105,42,0.2)}
+.bco{background:var(--gold-pale);color:var(--gold);border:1px solid rgba(201,149,42,0.2)}
+.bvar{background:var(--purple-pale);color:var(--purple);border:1px solid rgba(107,78,170,0.18)}
+.bil{background:var(--green-pale);color:var(--green);border:1px solid rgba(46,107,79,0.2)}
+.bcat{background:var(--cream);color:var(--brown-mid);border:1px solid var(--border)}
+.ra{display:flex;align-items:center;gap:5px;flex-shrink:0;padding-top:2px}
+.iBtn{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:5px;border-radius:6px;font-size:15px;line-height:1;transition:all .12s;display:flex;align-items:center}
+.iBtn:hover{background:var(--saffron-pale);color:var(--saffron)}
+.iBtn.d:hover{background:#fde8e8;color:#c0392b}
+
+/* VARIETY LINE */
+.vline{font-size:12px;color:var(--purple);font-weight:600;margin-top:3px;display:flex;align-items:flex-start;gap:5px;line-height:1.35}
+.vdot{width:5px;height:5px;border-radius:50%;background:var(--purple);display:inline-block;flex-shrink:0;margin-top:5px}
+
+/* FREQ */
+.fchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;margin-bottom:12px}
+.fchip{background:var(--cream);border:1.5px solid var(--border);border-radius:var(--rp);padding:5px 13px;font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all .13s;font-family:'Mukta',sans-serif;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.fchip:hover{background:var(--saffron-pale);border-color:var(--saffron);color:var(--saffron)}
+.fchip .ck{color:var(--green);font-size:10px}
+
+/* BUTTONS */
+.btnP{padding:10px 20px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,var(--saffron),#D45A1A);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:'Mukta',sans-serif;transition:all .15s;box-shadow:0 2px 8px rgba(232,105,42,0.25)}
+.btnP:hover{transform:translateY(-1px)}
+.btnP:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btnO{padding:10px 18px;border-radius:var(--rs);border:1.5px solid var(--saffron);background:transparent;color:var(--saffron);font-weight:600;font-size:14px;cursor:pointer;font-family:'Mukta',sans-serif;transition:all .15s}
+.btnO:hover{background:var(--saffron-pale)}
+.btnD{padding:10px 18px;border-radius:var(--rs);border:none;background:#c0392b;color:#fff;font-weight:600;font-size:14px;cursor:pointer;font-family:'Mukta',sans-serif}
+.btnSA{padding:5px 11px;border-radius:var(--rs);border:none;background:var(--saffron);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Mukta',sans-serif;white-space:nowrap;transition:all .12s}
+.btnSA.il{background:var(--green)}
+.btnSD{padding:5px 8px;border-radius:var(--rs);border:1px solid #fecaca;background:#fef2f2;color:#c0392b;font-size:11px;cursor:pointer;font-family:'Mukta',sans-serif}
+.btnSD:hover{background:#fde8e8}
+.btnAnother{width:100%;padding:9px;border-radius:var(--rs);border:1.5px dashed var(--saffron);background:transparent;color:var(--saffron);font-weight:600;font-size:13px;cursor:pointer;font-family:'Mukta',sans-serif;margin-top:8px;transition:all .15s}
+.btnAnother:hover{background:var(--saffron-pale)}
+
+/* FORM */
+.fl{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;margin-bottom:4px;display:block}
+.fi{width:100%;padding:9px 11px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-primary);font-size:14px;font-family:'Mukta',sans-serif;outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--saffron)}
+.fi::placeholder{color:var(--text-muted)}
+.fta{width:100%;padding:9px 11px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-primary);font-size:13px;font-family:'Mukta',sans-serif;outline:none;transition:border-color .15s;resize:vertical;min-height:56px;line-height:1.45}
+.fta:focus{border-color:var(--purple)}
+.fta::placeholder{color:var(--text-muted)}
+.fsel{padding:9px 10px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-primary);font-size:13px;font-family:'Mukta',sans-serif;outline:none;cursor:pointer}
+.fsel:focus{border-color:var(--saffron)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg1{margin-bottom:10px}
+.hint{font-size:11px;color:var(--text-muted);margin-top:4px;line-height:1.4}
+
+
+
+/* OVERLAY */
+.ov{position:fixed;inset:0;z-index:60;background:rgba(20,8,4,0.55);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);animation:fIn .15s ease}
+@keyframes fIn{from{opacity:0}to{opacity:1}}
+.sheet{background:var(--card-bg);border-radius:22px 22px 0 0;padding:8px 16px 36px;width:100%;max-width:500px;animation:sUp .22s cubic-bezier(.34,1.56,.64,1);max-height:92vh;overflow-y:auto}
+@keyframes sUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.shdl{width:40px;height:4px;background:var(--border-strong);border-radius:2px;margin:8px auto 18px;opacity:.5}
+.sht{font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+.shs{font-size:12px;color:var(--text-muted);margin-bottom:16px}
+.shdiv{height:1px;background:var(--border);margin:12px 0}
+
+/* NOTIF */
+.notif{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--brown-dark);color:#fff;padding:9px 22px;border-radius:var(--rp);font-size:13px;font-weight:600;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:nIn .2s ease;pointer-events:none;white-space:nowrap}
+[data-theme="dark"] .notif{background:#FAF0E6;color:#1E0F08}
+@keyframes nIn{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* EMPTY */
+.empty{text-align:center;padding:56px 24px;color:var(--text-muted)}
+.ei{font-size:52px;margin-bottom:14px;display:block}
+.et{font-size:17px;font-weight:700;color:var(--text-secondary);margin-bottom:6px}
+.es{font-size:13px;line-height:1.5}
+
+/* CAT DIVIDER */
+.cdiv{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin:14px 0 6px 2px;display:flex;align-items:center;gap:6px}
+.cdiv::before{content:'';width:3px;height:12px;background:var(--saffron);border-radius:2px}
+.cdiv::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* LIST HEADER */
+.lhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.lcnt{font-size:12px;color:var(--text-muted);font-weight:500}
+.btnCL{padding:5px 11px;border-radius:var(--rs);border:1px solid #fecaca;background:#fef2f2;color:#c0392b;font-size:11px;font-weight:700;cursor:pointer;font-family:'Mukta',sans-serif}
+
+/* PREVIEW */
+.prev{background:var(--saffron-pale);border:1.5px solid rgba(232,105,42,0.2);border-radius:var(--rs);padding:9px 14px;text-align:center;margin:10px 0}
+.prev strong{font-size:13px;color:var(--saffron);font-weight:700;word-break:break-word;line-height:1.5}
+
+/* CONFIRM */
+.cico{font-size:44px;text-align:center;display:block;margin-bottom:10px}
+.ctit{font-size:18px;font-weight:700;text-align:center;margin-bottom:8px}
+.csub{font-size:13px;color:var(--text-muted);text-align:center;line-height:1.5;margin-bottom:22px}
+.brow{display:flex;gap:10px;margin-top:6px}
+.brow>*{flex:1}
+
+/* SYNC STATUS DOT */
+.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.sync-dot.online{background:#2E6B4F;box-shadow:0 0 0 2px rgba(46,107,79,0.25)}
+.sync-dot.offline{background:#c0392b;box-shadow:0 0 0 2px rgba(192,57,43,0.2)}
+.sync-dot.syncing{background:var(--gold);animation:pulse .9s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sync-bar{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);padding:4px 0 8px}
+.family-badge{
+  background:var(--saffron-pale);border:1px solid rgba(232,105,42,0.25);
+  border-radius:var(--rp);padding:2px 9px;font-size:10px;font-weight:700;
+  color:var(--saffron);letter-spacing:.3px;max-width:120px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;
+}
+
+/* JOIN SCREEN */
+#join-screen{
+  position:fixed;inset:0;z-index:100;
+  background:var(--ivory);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;max-width:500px;margin:0 auto;
+}
+.join-logo{width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,var(--saffron),var(--gold));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 4px 18px rgba(232,105,42,0.35)}
+.join-logo img{width:48px;height:48px;object-fit:contain}
+.join-title{font-family:'Yatra One',cursive;font-size:26px;color:var(--saffron);text-align:center;margin-bottom:4px}
+.join-sub{font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:28px;letter-spacing:.5px}
+.join-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px;width:100%;max-width:360px;box-shadow:var(--shadow)}
+.join-tabs{display:flex;border-bottom:1.5px solid var(--border);margin-bottom:18px}
+.join-tab{flex:1;padding:9px;border:none;background:transparent;color:var(--text-muted);font-size:13px;font-weight:600;border-bottom:3px solid transparent;cursor:pointer;font-family:'Mukta',sans-serif;transition:all .15s;margin-bottom:-1.5px}
+.join-tab.active{color:var(--saffron);border-bottom-color:var(--saffron)}
+.join-hint{font-size:11px;color:var(--text-muted);margin-top:12px;line-height:1.5;text-align:center}
+.join-err{font-size:12px;color:#c0392b;text-align:center;margin-top:8px;min-height:16px}
+
+/* PROFILE PAGE */
+.prof-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r);padding:20px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.prof-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),var(--gold));display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 14px;box-shadow:0 3px 12px rgba(232,105,42,0.3)}
+.prof-name-display{font-size:18px;font-weight:700;color:var(--text-primary);text-align:center;margin-bottom:3px}
+.prof-detail{font-size:13px;color:var(--text-muted);text-align:center;line-height:1.6}
+.prof-saved{background:var(--green-pale);border:1px solid rgba(46,107,79,0.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--green);font-weight:600}
+.prof-family{background:var(--saffron-pale);border:1px solid rgba(232,105,42,0.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--saffron);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+
+@media (prefers-color-scheme:dark){
+  body:not([data-theme="light"]){
+    --ivory:#1A0F09;--cream:#221208;--card-bg:#2A1510;--input-bg:#321A0E;
+    --text-primary:#FAF0E6;--text-secondary:#D4A882;--text-muted:#9B7060;
+    --border:#4A2515;--border-strong:#7A4030;--saffron-pale:#3A1A08;
+    --gold-pale:#2A1A05;--green-pale:#0A2018;--purple-pale:#1A1030;
+    --shadow:0 2px 12px rgba(0,0,0,0.35);--brown-dark:#FAF0E6;--brown-mid:#D4A882;
+  }
+}
+</style>
+</head>
+<body>
+<div id="notif" class="notif" style="display:none"></div>
+
+<!-- JOIN SCREEN -->
+<div id="join-screen">
+  <div class="join-logo"><img src="favicon.png"></div>
+  <div class="join-title">Grocerra</div>
+  <div class="join-sub">SHARED FAMILY GROCERY LIST</div>
+  <div class="join-card">
+    <div class="join-tabs">
+      <button class="join-tab active" id="jt-join" onclick="joinTabSwitch('join')">Join Family</button>
+      <button class="join-tab" id="jt-create" onclick="joinTabSwitch('create')">Create New</button>
+    </div>
+    <!-- JOIN -->
+    <div id="jp-join">
+      <div class="fg1">
+        <label class="fl">Family ID</label>
+        <input class="fi" id="j-id" placeholder="Enter family ID" autocomplete="off" autocapitalize="none">
+      </div>
+      <div class="fg1">
+        <label class="fl">Password</label>
+        <input class="fi" id="j-pw" type="password" placeholder="Enter password">
+      </div>
+      <button class="btnP" style="width:100%;margin-top:4px" onclick="doJoin()">Join →</button>
+      <div class="join-hint">Ask your family member for the ID &amp; password they used when creating.</div>
+    </div>
+    <!-- CREATE -->
+    <div id="jp-create" style="display:none">
+      <div class="fg1">
+        <label class="fl">Choose a Family ID</label>
+        <input class="fi" id="c-id" placeholder="e.g. sharma2025" autocomplete="off" autocapitalize="none">
+      </div>
+      <div class="fg1">
+        <label class="fl">Set a Password</label>
+        <input class="fi" id="c-pw" type="password" placeholder="Min 4 characters">
+      </div>
+      <button class="btnP" style="width:100%;margin-top:4px" onclick="doCreate()">Create →</button>
+      <div class="join-hint">Share this ID &amp; password with family members so they can join from their phone.</div>
+    </div>
+    <div class="join-err" id="join-err"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div class="hbrand">
+    <div class="hlogo"><img src="favicon.png" style="width:50px;height:50px;object-fit:contain"></div>
+    <div><div class="btitle">Grocerra</div><div class="bsub">ग्रोसेरा</div></div>
+  </div>
+  <div class="hact">
+    <button class="btnPDF" id="btnPDF" onclick="dlPDF()">⬇ PDF</button>
+    <button class="btnH" onclick="toggleTheme()">🌙 / ☀</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div id="nav">
+  <button class="ntab active" data-tab="list" onclick="switchTab('list')">
+    📋 My List <span id="nbadge" class="nbadge" style="display:none">0</span>
+  </button>
+  <button class="ntab" data-tab="db" onclick="switchTab('db')">🗄 Database</button>
+  <button class="ntab" data-tab="profile" onclick="switchTab('profile')">👤 Profile</button>
+</div>
+
+<!-- BODY -->
+<div id="body">
+  <!-- LIST -->
+  <div id="tab-list">
+    <div id="sync-bar" class="sync-bar">
+      <span class="sync-dot syncing" id="sync-dot"></span>
+      <span id="sync-txt">Connecting…</span>
+      <span class="family-badge" id="family-badge"></span>
+    </div>
+    <div class="sw"><span class="si">🔍</span><input class="sinput" id="lsearch" placeholder="Search list… / सूची खोजें" oninput="renderList()"></div>
+    <div id="fsec" style="display:none">
+      <div class="slbl">⚡ Quick Add — बार-बार खरीदे</div>
+      <div id="fchips" class="fchips"></div>
+    </div>
+    <div id="lhdr" class="lhdr" style="display:none">
+      <span id="lcnt" class="lcnt"></span>
+      <button class="btnCL" onclick="askClear()">🗑 Clear All</button>
+    </div>
+    <div id="lcont"></div>
+  </div>
+
+  <!-- DB -->
+  <div id="tab-db" style="display:none">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <div class="sw" style="flex:1;margin-bottom:0"><span class="si">🔍</span><input class="sinput" id="dbsearch" placeholder="Search items…" oninput="renderDB()"></div>
+      <button class="btnP" style="padding:10px 14px;font-size:13px;white-space:nowrap" onclick="openAddDB()">+ Add</button>
+    </div>
+    <div id="dbcont"></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="tab-profile" style="display:none">
+    <div id="prof-view" style="display:none">
+      <div class="prof-card">
+        <div class="prof-avatar">👤</div>
+        <div class="prof-name-display" id="pv-name"></div>
+        <div class="prof-detail" id="pv-phone"></div>
+        <div class="prof-detail" id="pv-addr"></div>
+      </div>
+      <div class="prof-saved">✓ Profile saved — appears on every PDF you generate</div>
+      <div class="prof-family" id="prof-family-row">
+        <span id="prof-family-name"></span>
+        <button onclick="leaveFamily()" style="padding:4px 10px;border-radius:var(--rs);border:1px solid rgba(232,105,42,0.3);background:transparent;color:var(--saffron);font-size:11px;font-weight:700;cursor:pointer;font-family:'Mukta',sans-serif">Leave</button>
+      </div>
+      <button class="btnP" style="width:100%" onclick="showProfEdit()">✏ Edit Profile</button>
+    </div>
+    <div id="prof-edit">
+      <div class="prof-card">
+        <div class="prof-avatar">👤</div>
+        <div class="fg1">
+          <label class="fl">Your Name *</label>
+          <input class="fi" id="pe-name" placeholder="e.g. Ramesh Kumar" autocomplete="name">
+        </div>
+        <div class="fg1">
+          <label class="fl">Phone Number</label>
+          <input class="fi" id="pe-phone" type="tel" placeholder="e.g. 98765 43210" autocomplete="tel">
+        </div>
+        <div class="fg1" style="margin-bottom:0">
+          <label class="fl">Address</label>
+          <textarea class="fta" id="pe-addr" rows="2" placeholder="e.g. 12, MG Road, Indore"></textarea>
+        </div>
+      </div>
+      <button class="btnP" style="width:100%" onclick="saveProfile()">Save Profile</button>
+    </div>
+  </div>
+</div>
+<div id="sh-list" class="ov" style="display:none" onclick="if(event.target===this)closeSheet('sh-list')">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+      <div>
+        <div class="sht" id="sl-name"></div>
+        <div id="sl-hint" class="shs"></div>
+        <span id="sl-cat" class="badge bcat"></span>
+      </div>
+      <button class="iBtn" onclick="closeSheet('sh-list')" style="font-size:18px;margin-top:-2px">✕</button>
+    </div>
+
+    <!-- VARIETY -->
+    <div style="position:relative;margin-bottom:14px">
+      <span style="position:absolute;left:11px;top:10px;font-size:14px;pointer-events:none;opacity:.55">🌾</span>
+      <textarea class="fta" id="sl-var" rows="2"
+        placeholder="Variety / किस्म"
+        oninput="updatePrev()" style="padding-left:32px;min-height:48px"></textarea>
+    </div>
+
+    <!-- QUANTITY -->
+    <div class="fg2">
+      <div>
+        <label class="fl">Count / संख्या</label>
+        <input class="fi" id="sl-cnt" type="number" min="1" placeholder="e.g. 2" oninput="updatePrev()">
+      </div>
+      <div>
+        <label class="fl">Weight / वज़न</label>
+        <div style="display:flex;gap:5px">
+          <input class="fi" id="sl-wt" type="number" min="0" placeholder="500" oninput="updatePrev()" style="min-width:0">
+          <select class="fsel" id="sl-wu" onchange="updatePrev()" style="min-width:52px">
+            <option>g</option><option>kg</option><option>ml</option><option>L</option><option>piece</option><option>dozen</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPANY -->
+    <div class="fg2" style="margin-top:2px">
+      <div>
+        <label class="fl">Brand / कंपनी</label>
+        <select class="fsel" id="sl-csel" onchange="cselChg()" style="width:100%"><option value="">— Any —</option></select>
+      </div>
+      <div>
+        <label class="fl">Or type custom</label>
+        <input class="fi" id="sl-cust" placeholder="Custom name" oninput="updatePrev()">
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div id="prevbox" class="prev" style="display:none">
+      <strong id="prevtxt"></strong>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="brow" style="margin-top:14px">
+      <button class="btnO" onclick="closeSheet('sh-list')">Cancel</button>
+      <button class="btnP" id="sl-sub" onclick="submitList(false)">Add to List</button>
+    </div>
+    <button class="btnAnother" id="sl-anoth" onclick="submitList(true)">＋ Add &amp; add another variety of same item</button>
+  </div>
+</div>
+
+<!-- SHEET: ADD TO DB -->
+<div id="sh-db" class="ov" style="display:none" onclick="if(event.target===this)closeSheet('sh-db')">
+  <div class="sheet">
+    <div class="shdl"></div>
+    <div class="sht">Add to Database</div>
+    <div class="fg1">
+      <label class="fl">Item Name / नाम</label>
+      <input class="fi" id="db-name" placeholder="e.g. Namkeen / नमकीन" autocomplete="off">
+    </div>
+    <div class="fg1">
+      <label class="fl">Category / श्रेणी</label>
+      <select class="fsel" id="db-cat" style="width:100%"></select>
+    </div>
+    <div class="fg1">
+      <label class="fl">Default Company / Brand (optional) — डिफ़ॉल्ट कंपनी</label>
+      <input class="fi" id="db-co" placeholder="e.g. Haldiram's, MDH, Amul…">
+
+    </div>
+    <div class="brow">
+      <button class="btnO" onclick="closeSheet('sh-db')">Cancel</button>
+      <button class="btnP" onclick="submitDB()">Add to Database</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET: CONFIRM CLEAR -->
+<div id="sh-clr" class="ov" style="display:none" onclick="if(event.target===this)closeSheet('sh-clr')">
+  <div class="sheet" style="padding-bottom:40px">
+    <div class="shdl"></div>
+    <span class="cico">⚠️</span>
+    <div class="ctit">Clear entire list?</div>
+    <p class="csub" id="clrmsg"></p>
+    <div class="brow">
+      <button class="btnO" onclick="closeSheet('sh-clr')">Keep List</button>
+      <button class="btnD" onclick="clearList()">Yes, Clear</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { ref, set, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const fbApp = initializeApp({ databaseURL: "https://grocerra-0203-default-rtdb.firebaseio.com/" });
+const _db = getDatabase(fbApp);
+
+// expose helpers globally so the main script can use them
+window._fbRef  = (path) => ref(_db, path);
+window._fbSet  = (r, v) => set(r, v);
+window._fbOn   = (r, cb, errCb) => onValue(r, cb, errCb);
+window._fbOff  = (r, cb) => off(r, "value", cb);
+window._fbConnRef = ref(_db, ".info/connected");
+
+// signal that Firebase is ready
+window._fbReady = true;
+document.dispatchEvent(new Event("fbReady"));
+</script>
+
+<script>
+// ═══════════ FIREBASE WRAPPER ═══════════
+// thin wrappers — main code calls these instead of fbDb directly
+let _listRef = null, _fbListener = null;
+
+function fbListen(path, onData, onErr) {
+  if (_listRef && _fbListener) window._fbOff(_listRef, _fbListener);
+  _listRef = window._fbRef(path);
+  _fbListener = onData;
+  window._fbOn(_listRef, onData, onErr);
+}
+function fbWrite(path, data) {
+  return window._fbSet(window._fbRef(path), data);
+}
+function fbOnce(path) {
+  return new Promise((res, rej) => {
+    const r = window._fbRef(path);
+    window._fbOn(r, snap => { window._fbOff(r, null); res(snap); }, rej);
+  });
+}
+function fbStopListen() {
+  if (_listRef && _fbListener) { window._fbOff(_listRef, _fbListener); _listRef=null; _fbListener=null; }
+}
+
+// ═══════════ CONSTANTS ═══════════
+const CATS=["Grains & Flour","Pulses & Lentils","Spices & Masala","Oils & Ghee","Staples & Sugar","Dairy & Eggs","Snacks & Namkeen","Packaged & Sauces","Beverages","Household & Personal","Pooja Items","Other"];
+const BRANDS={
+  "Grains & Flour":["Aashirvaad","Patanjali","Pillsbury","Annapurna (ITC)","Nature Fresh","24 Mantra","Rajdhani","Fortune"],
+  "Pulses & Lentils":["Tata Sampann","Patanjali","24 Mantra","Rajdhani","Daawat","Fortune"],
+  "Spices & Masala":["MDH","Everest","Catch","Patanjali","Badshah","Ramdev","Eastern","Priya"],
+  "Oils & Ghee":["Fortune","Saffola","Dhara","Patanjali","Amul","Sundrop","Nature Fresh","Gold Winner"],
+  "Staples & Sugar":["Tata","Patanjali","24 Mantra","Nature Fresh","Uttam"],
+  "Dairy & Eggs":["Amul","Mother Dairy","Nestle","Parag","Britannia","Sudha","Kwality"],
+  "Snacks & Namkeen":["Haldiram's","Bikaji","Balaji","Bingo","Lay's","Kurkure","Patanjali","Parle"],
+  "Packaged & Sauces":["Maggi (Nestlé)","Kissan","Heinz","Knorr","Patanjali","Ching's","Top Ramen","Priya"],
+  "Beverages":["Tata Tea","Red Label","Society","Wagh Bakri","Bru","Nescafé","Boost","Horlicks"],
+  "Household & Personal":["Surf Excel","Ariel","Tide","Vim","Colgate","Pepsodent","Lifebuoy","Dettol","Harpic"],
+  "Pooja Items":["Cycle Brand","Moksh","Patanjali","Zed Black"],
+  "Other":[]
+};
+const DDB=[
+  {id:"d1",n:"Atta / आटा",c:"Grains & Flour"},{id:"d2",n:"Maida / मैदा",c:"Grains & Flour"},
+  {id:"d3",n:"Besan / बेसन",c:"Grains & Flour"},{id:"d4",n:"Suji / सूजी",c:"Grains & Flour"},
+  {id:"d5",n:"Basmati Rice / बासमती चावल",c:"Grains & Flour"},{id:"d6",n:"Parmal Rice / परमल चावल",c:"Grains & Flour"},
+  {id:"d7",n:"Sona Masoori Rice / सोना मसूरी चावल",c:"Grains & Flour"},{id:"d8",n:"Poha / पोहा",c:"Grains & Flour"},
+  {id:"d9",n:"Corn Flour / कॉर्न फ्लोर",c:"Grains & Flour"},{id:"d10",n:"Ragi Flour / रागी आटा",c:"Grains & Flour"},
+  {id:"d11",n:"Sattu / सत्तू",c:"Grains & Flour"},{id:"d12",n:"Daliya / दलिया",c:"Grains & Flour"},
+  {id:"d13",n:"Sabudana / साबूदाना",c:"Grains & Flour"},{id:"d14",n:"Jowar Flour / ज्वार आटा",c:"Grains & Flour"},
+  {id:"d15",n:"Bajra Flour / बाजरा आटा",c:"Grains & Flour"},
+  {id:"d16",n:"Toor Dal / तुअर दाल",c:"Pulses & Lentils"},{id:"d17",n:"Chana Dal / चना दाल",c:"Pulses & Lentils"},
+  {id:"d18",n:"Moong Dal / मूंग दाल",c:"Pulses & Lentils"},{id:"d19",n:"Masoor Dal / मसूर दाल",c:"Pulses & Lentils"},
+  {id:"d20",n:"Urad Dal / उड़द दाल",c:"Pulses & Lentils"},{id:"d21",n:"Rajma / राजमा",c:"Pulses & Lentils"},
+  {id:"d22",n:"Kabuli Chana / काबुली चना",c:"Pulses & Lentils"},{id:"d23",n:"Black Chana / काला चना",c:"Pulses & Lentils"},
+  {id:"d24",n:"Lobiya / लोबिया",c:"Pulses & Lentils"},{id:"d25",n:"Moth Dal / मोठ दाल",c:"Pulses & Lentils"},
+  {id:"d26",n:"Turmeric / हल्दी",c:"Spices & Masala"},{id:"d27",n:"Red Chilli Powder / लाल मिर्च",c:"Spices & Masala"},
+  {id:"d28",n:"Coriander Powder / धनिया पाउडर",c:"Spices & Masala"},{id:"d29",n:"Cumin / जीरा",c:"Spices & Masala"},
+  {id:"d30",n:"Mustard Seeds / राई",c:"Spices & Masala"},{id:"d31",n:"Garam Masala / गरम मसाला",c:"Spices & Masala"},
+  {id:"d32",n:"Amchur / अमचूर",c:"Spices & Masala"},{id:"d33",n:"Asafoetida / हींग",c:"Spices & Masala"},
+  {id:"d34",n:"Cardamom / इलायची",c:"Spices & Masala"},{id:"d35",n:"Cloves / लौंग",c:"Spices & Masala"},
+  {id:"d36",n:"Cinnamon / दालचीनी",c:"Spices & Masala"},{id:"d37",n:"Bay Leaves / तेज पत्ता",c:"Spices & Masala"},
+  {id:"d38",n:"Black Pepper / काली मिर्च",c:"Spices & Masala"},{id:"d39",n:"Chaat Masala / चाट मसाला",c:"Spices & Masala"},
+  {id:"d40",n:"Pav Bhaji Masala / पाव भाजी मसाला",c:"Spices & Masala"},{id:"d41",n:"Kitchen King / किचन किंग",c:"Spices & Masala"},
+  {id:"d42",n:"Kashmiri Mirch / कश्मीरी मिर्च",c:"Spices & Masala"},{id:"d43",n:"Methi Seeds / मेथी दाना",c:"Spices & Masala"},
+  {id:"d44",n:"Carom Seeds / अजवाइन",c:"Spices & Masala"},{id:"d45",n:"Dry Mango Powder / खटाई",c:"Spices & Masala"},
+  {id:"d46",n:"Chicken Masala / चिकन मसाला",c:"Spices & Masala"},{id:"d47",n:"Paneer Masala / पनीर मसाला",c:"Spices & Masala"},
+  {id:"d48",n:"Refined Oil / रिफाइंड तेल",c:"Oils & Ghee"},{id:"d49",n:"Mustard Oil / सरसों का तेल",c:"Oils & Ghee"},
+  {id:"d50",n:"Ghee / घी",c:"Oils & Ghee"},{id:"d51",n:"Coconut Oil / नारियल तेल",c:"Oils & Ghee"},
+  {id:"d52",n:"Sunflower Oil / सूरजमुखी तेल",c:"Oils & Ghee"},{id:"d53",n:"Groundnut Oil / मूंगफली तेल",c:"Oils & Ghee"},
+  {id:"d54",n:"Sesame Oil / तिल तेल",c:"Oils & Ghee"},
+  {id:"d55",n:"Salt / नमक",c:"Staples & Sugar"},{id:"d56",n:"Sugar / चीनी",c:"Staples & Sugar"},
+  {id:"d57",n:"Jaggery / गुड़",c:"Staples & Sugar"},{id:"d58",n:"Rock Salt / सेंधा नमक",c:"Staples & Sugar"},
+  {id:"d59",n:"Vinegar / सिरका",c:"Staples & Sugar"},{id:"d60",n:"Baking Soda / खाने का सोडा",c:"Staples & Sugar"},
+  {id:"d61",n:"Baking Powder / बेकिंग पाउडर",c:"Staples & Sugar"},{id:"d62",n:"Mishri / मिश्री",c:"Staples & Sugar"},
+  {id:"d63",n:"Tamarind / इमली",c:"Staples & Sugar"},
+  {id:"d64",n:"Milk / दूध",c:"Dairy & Eggs"},{id:"d65",n:"Curd / दही",c:"Dairy & Eggs"},
+  {id:"d66",n:"Paneer / पनीर",c:"Dairy & Eggs"},{id:"d67",n:"Butter / मक्खन",c:"Dairy & Eggs"},
+  {id:"d68",n:"Cheese / चीज़",c:"Dairy & Eggs"},{id:"d69",n:"Cream / क्रीम",c:"Dairy & Eggs"},
+  {id:"d70",n:"Khoya / मावा",c:"Dairy & Eggs"},{id:"d71",n:"Eggs / अंडे",c:"Dairy & Eggs"},
+  {id:"d72",n:"Condensed Milk / मिल्क मेड",c:"Dairy & Eggs"},{id:"d73",n:"Milk Powder / दूध पाउडर",c:"Dairy & Eggs"},
+  {id:"d74",n:"Namkeen / नमकीन",c:"Snacks & Namkeen"},{id:"d75",n:"Mixture / मिक्सचर",c:"Snacks & Namkeen"},
+  {id:"d76",n:"Bhujia / भुजिया",c:"Snacks & Namkeen"},{id:"d77",n:"Papad / पापड़",c:"Snacks & Namkeen"},
+  {id:"d78",n:"Biscuits / बिस्किट",c:"Snacks & Namkeen"},{id:"d79",n:"Mathri / मठरी",c:"Snacks & Namkeen"},
+  {id:"d80",n:"Chips / चिप्स",c:"Snacks & Namkeen"},{id:"d81",n:"Peanuts / मूंगफली",c:"Snacks & Namkeen"},
+  {id:"d82",n:"Murmura / मुरमुरा",c:"Snacks & Namkeen"},{id:"d83",n:"Sev / सेव",c:"Snacks & Namkeen"},
+  {id:"d84",n:"Chivda / चिवड़ा",c:"Snacks & Namkeen"},{id:"d85",n:"Shakarpara / शकरपारा",c:"Snacks & Namkeen"},
+  {id:"d86",n:"Ketchup / केचप",c:"Packaged & Sauces"},{id:"d87",n:"Noodles / नूडल्स",c:"Packaged & Sauces"},
+  {id:"d88",n:"Pickle / अचार",c:"Packaged & Sauces"},{id:"d89",n:"Jam / जैम",c:"Packaged & Sauces"},
+  {id:"d90",n:"Pasta / पास्ता",c:"Packaged & Sauces"},{id:"d91",n:"Vermicelli / सेवई",c:"Packaged & Sauces"},
+  {id:"d92",n:"Tomato Puree / टमाटर प्यूरी",c:"Packaged & Sauces"},{id:"d93",n:"Mayonnaise / मेयोनेज़",c:"Packaged & Sauces"},
+  {id:"d94",n:"Soy Sauce / सोया सॉस",c:"Packaged & Sauces"},
+  {id:"d95",n:"Tea / चाय",c:"Beverages"},{id:"d96",n:"Coffee / कॉफी",c:"Beverages"},
+  {id:"d97",n:"Green Tea / ग्रीन टी",c:"Beverages"},{id:"d98",n:"Bournvita / बोर्नविटा",c:"Beverages"},
+  {id:"d99",n:"Horlicks / हॉर्लिक्स",c:"Beverages"},{id:"d100",n:"Boost / बूस्ट",c:"Beverages"},
+  {id:"d101",n:"Sharbat / शर्बत",c:"Beverages"},{id:"d102",n:"Fruit Juice / जूस",c:"Beverages"},
+  {id:"d103",n:"Detergent Powder / डिटर्जेंट",c:"Household & Personal"},{id:"d104",n:"Dishwash Bar / बर्तन साबुन",c:"Household & Personal"},
+  {id:"d105",n:"Floor Cleaner / फ्लोर क्लीनर",c:"Household & Personal"},{id:"d106",n:"Toilet Cleaner / टॉयलेट क्लीनर",c:"Household & Personal"},
+  {id:"d107",n:"Soap / नहाने का साबुन",c:"Household & Personal"},{id:"d108",n:"Shampoo / शैम्पू",c:"Household & Personal"},
+  {id:"d109",n:"Toothpaste / टूथपेस्ट",c:"Household & Personal"},{id:"d110",n:"Toothbrush / टूथब्रश",c:"Household & Personal"},
+  {id:"d111",n:"Sanitary Napkins / पैड",c:"Household & Personal"},{id:"d112",n:"Mosquito Coil / मच्छर कॉइल",c:"Household & Personal"},
+  {id:"d113",n:"Phenyl / फिनाइल",c:"Household & Personal"},{id:"d114",n:"Matchbox / माचिस",c:"Household & Personal"},
+  {id:"d115",n:"Candles / मोमबत्ती",c:"Household & Personal"},{id:"d116",n:"Liquid Soap / लिक्विड साबुन",c:"Household & Personal"},
+  {id:"d117",n:"Agarbatti / अगरबत्ती",c:"Pooja Items"},{id:"d118",n:"Camphor / कपूर",c:"Pooja Items"},
+  {id:"d119",n:"Dhoop / धूप",c:"Pooja Items"},{id:"d120",n:"Coconut / नारियल",c:"Pooja Items"},
+  {id:"d121",n:"Kumkum / कुमकुम",c:"Pooja Items"},{id:"d122",n:"Havan Samagri / हवन सामग्री",c:"Pooja Items"},
+];
+
+// ═══════════ STATE ═══════════
+const SK={DB:"gr_db",FREQ:"gr_freq",THEME:"gr_theme",PROF:"gr_prof",SESSION:"gr_session"};
+const ld=(k,f)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch{return f}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+let db=ld(SK.DB,DDB.map(x=>({...x})));
+let freq=ld(SK.FREQ,{});
+let theme=ld(SK.THEME,"auto");
+let profile=ld(SK.PROF,{name:"",phone:"",address:""});
+let session=ld(SK.SESSION,null);
+let list=[];
+let tab="list";
+let slItem=null,slEditId=null;
+
+// ═══════════ UTILS ═══════════
+function grp(arr,fn){return arr.reduce((a,i)=>{const k=fn(i);if(!a[k])a[k]=[];a[k].push(i);return a},{})}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function qtyStr(it){const p=[];if(it.cnt)p.push(it.cnt+" pkt");if(it.wt&&it.wu)p.push(it.wt+it.wu);if(!p.length)return "";return p.length===2?p[0]+" × "+p[1]:p[0]}
+function enName(n){return n.split("/")[0].trim()}
+function hiName(n){return n.includes("/")?n.split("/")[1].trim():""}
+function hashPw(pw){let h=5381;for(let i=0;i<pw.length;i++)h=((h<<5)+h)+pw.charCodeAt(i);return(h>>>0).toString(36)}
+function safeFamilyId(id){return id.toLowerCase().replace(/[^a-z0-9_-]/g,"_")}
+
+// ═══════════ THEME ═══════════
+function applyTheme(){
+  if(theme==="dark")document.body.setAttribute("data-theme","dark");
+  else if(theme==="light")document.body.setAttribute("data-theme","light");
+  else document.body.removeAttribute("data-theme");
+}
+function toggleTheme(){
+  theme=theme==="auto"?"light":theme==="light"?"dark":"auto";
+  sv(SK.THEME,theme);applyTheme();
+  notify(theme==="auto"?"Auto 🌗":theme==="dark"?"Dark 🌙":"Light ☀️");
+}
+applyTheme();
+
+// ═══════════ NOTIFY ═══════════
+let _nt;
+function notify(m){const el=document.getElementById("notif");el.textContent=m;el.style.display="block";clearTimeout(_nt);_nt=setTimeout(()=>el.style.display="none",2400)}
+
+// ═══════════ SYNC STATUS ═══════════
+function setSyncStatus(state,txt){
+  const dot=document.getElementById("sync-dot");
+  const stxt=document.getElementById("sync-txt");
+  dot.className="sync-dot "+state;
+  stxt.textContent=txt;
+}
+
+// ═══════════ JOIN SCREEN ═══════════
+function joinTabSwitch(t){
+  document.getElementById("jt-join").classList.toggle("active",t==="join");
+  document.getElementById("jt-create").classList.toggle("active",t==="create");
+  document.getElementById("jp-join").style.display=t==="join"?"block":"none";
+  document.getElementById("jp-create").style.display=t==="create"?"block":"none";
+  document.getElementById("join-err").textContent="";
+}
+
+async function doCreate(){
+  const rawId=document.getElementById("c-id").value.trim();
+  const pw=document.getElementById("c-pw").value.trim();
+  const errEl=document.getElementById("join-err");
+  if(!rawId){errEl.textContent="Please enter a Family ID";return}
+  if(pw.length<4){errEl.textContent="Password must be at least 4 characters";return}
+  const familyId=safeFamilyId(rawId);
+  const pwHash=hashPw(pw);
+  errEl.textContent="Creating…";
+  try{
+    const snap=await fbOnce("families/"+familyId+"/meta");
+    if(snap.exists()){errEl.textContent="This Family ID already exists. Try a different one.";return}
+    await fbWrite("families/"+familyId+"/meta",{pwHash,created:Date.now()});
+    session={familyId,pwHash};
+    sv(SK.SESSION,session);
+    errEl.textContent="";
+    startApp();
+  }catch(e){errEl.textContent="Error: "+e.message}
+}
+
+async function doJoin(){
+  const rawId=document.getElementById("j-id").value.trim();
+  const pw=document.getElementById("j-pw").value.trim();
+  const errEl=document.getElementById("join-err");
+  if(!rawId||!pw){errEl.textContent="Please enter Family ID and password";return}
+  const familyId=safeFamilyId(rawId);
+  const pwHash=hashPw(pw);
+  errEl.textContent="Checking…";
+  try{
+    const snap=await fbOnce("families/"+familyId+"/meta");
+    if(!snap.exists()){errEl.textContent="Family ID not found. Check the ID or create a new one.";return}
+    const meta=snap.val();
+    if(meta.pwHash!==pwHash){errEl.textContent="Incorrect password.";return}
+    session={familyId,pwHash};
+    sv(SK.SESSION,session);
+    errEl.textContent="";
+    startApp();
+  }catch(e){errEl.textContent="Error: "+e.message}
+}
+
+function leaveFamily(){
+  if(!confirm("Leave this family list? You can rejoin anytime with the same ID and password."))return;
+  fbStopListen();
+  session=null;sv(SK.SESSION,null);list=[];
+  document.getElementById("join-screen").style.display="flex";
+  document.getElementById("hdr").style.display="none";
+  document.getElementById("nav").style.display="none";
+  document.getElementById("body").style.display="none";
+}
+
+// ═══════════ START APP ═══════════
+function startApp(){
+  document.getElementById("join-screen").style.display="none";
+  document.getElementById("hdr").style.display="flex";
+  document.getElementById("nav").style.display="flex";
+  document.getElementById("body").style.display="block";
+  document.getElementById("family-badge").textContent=session.familyId;
+  document.getElementById("prof-family-name").textContent="Family: "+session.familyId;
+
+  const listPath="families/"+session.familyId+"/list";
+  setSyncStatus("syncing","Syncing…");
+
+  fbListen(listPath, snap=>{
+    const val=snap.val();
+    list=val?Object.values(val):[];
+    setSyncStatus("online","Live");
+    renderList();
+    if(tab==="db")renderDB();
+  }, err=>{setSyncStatus("offline","Offline");notify("Sync error — "+err.message)});
+
+  window._fbOn(window._fbConnRef, snap=>{
+    if(!session)return;
+    setSyncStatus(snap.val()?"online":"offline", snap.val()?"Live":"Offline — syncs when connected");
+  }, ()=>{});
+
+  renderList();
+  renderProfile();
+}
+
+// ═══════════ FIREBASE WRITE ═══════════
+function fbSetList(newList){
+  if(!session)return;
+  setSyncStatus("syncing","Saving…");
+  const obj={};
+  newList.forEach(it=>{obj[it.id]=it;});
+  fbWrite("families/"+session.familyId+"/list", obj)
+    .catch(e=>notify("Sync error: "+e.message));
+}
+
+// ═══════════ TABS ═══════════
+function switchTab(t){
+  tab=t;
+  document.getElementById("tab-list").style.display=t==="list"?"block":"none";
+  document.getElementById("tab-db").style.display=t==="db"?"block":"none";
+  document.getElementById("tab-profile").style.display=t==="profile"?"block":"none";
+  document.querySelectorAll(".ntab").forEach(b=>b.classList.toggle("active",b.dataset.tab===t));
+  if(t==="list")renderList();
+  else if(t==="db")renderDB();
+  else renderProfile();
+}
+
+// ═══════════ RENDER LIST ═══════════
+function renderList(){
+  const q=(document.getElementById("lsearch").value||"").toLowerCase();
+  const items=q?list.filter(i=>i.n.toLowerCase().includes(q)||(i.variety||"").toLowerCase().includes(q)):list;
+  document.getElementById("btnPDF").style.display=list.length?"flex":"none";
+  document.getElementById("nbadge").style.display=list.length?"inline-block":"none";
+  document.getElementById("nbadge").textContent=list.length;
+  document.getElementById("lhdr").style.display=list.length?"flex":"none";
+  document.getElementById("lcnt").textContent=list.length+" item"+(list.length!==1?"s":"");
+  const top=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id])=>db.find(d=>d.id===id)).filter(Boolean);
+  const fs=document.getElementById("fsec");
+  if(top.length){
+    fs.style.display="block";
+    document.getElementById("fchips").innerHTML=top.map(it=>{
+      const cnt=list.filter(l=>l.dbId===it.id).length;
+      return "<button class=\"fchip\" onclick=\"openAddList('"+it.id+"')\">"
+        +esc(enName(it.n))+(cnt?"<span class=\"ck\">"+(cnt>1?cnt+"×":"✓")+"</span>":"")
+        +"</button>";
+    }).join("");
+  } else fs.style.display="none";
+  const cont=document.getElementById("lcont");
+  if(!items.length){
+    cont.innerHTML=list.length
+      ?"<div class=\"empty\"><span class=\"ei\">🔎</span><div class=\"et\">No match found</div></div>"
+      :"<div class=\"empty\"><span class=\"ei\">🧺</span><div class=\"et\">Your list is empty</div><div class=\"es\">Go to <strong>Database</strong> tab to add items</div></div>";
+    return;
+  }
+  const grouped=grp(items,i=>i.cat||"Other");
+  cont.innerHTML=Object.entries(grouped).map(([cat,its])=>
+    "<div class=\"cdiv\">"+cat+"</div><div class=\"card\"><div class=\"ci\">"+
+    its.map(it=>{
+      const qs=qtyStr(it);
+      return "<div class=\"lr\"><div style=\"flex:1;min-width:0\"><div class=\"ien\">"+esc(enName(it.n))+"</div>"
+        +(hiName(it.n)?"<div class=\"ihi\">"+esc(hiName(it.n))+"</div>":"")
+        +(it.variety?"<div class=\"vline\"><span class=\"vdot\"></span><span>"+esc(it.variety)+"</span></div>":"")
+        +"<div class=\"ibadges\">"
+        +(qs?"<span class=\"badge bqty\">"+esc(qs)+"</span>":"")
+        +(it.company?"<span class=\"badge bco\">🏢 "+esc(it.company)+"</span>":"")
+        +"</div></div><div class=\"ra\">"
+        +"<button class=\"iBtn\" title=\"Edit\" onclick=\"editEntry('"+it.id+"')\" >✏</button>"
+        +"<button class=\"iBtn d\" title=\"Remove\" onclick=\"rmFromList('"+it.id+"')\" >✕</button>"
+        +"</div></div>";
+    }).join("")+
+    "</div></div>"
+  ).join("");
+}
+
+// ═══════════ RENDER DB ═══════════
+function renderDB(){
+  const q=(document.getElementById("dbsearch").value||"").toLowerCase();
+  const items=q?db.filter(d=>d.n.toLowerCase().includes(q)):db;
+  const cont=document.getElementById("dbcont");
+  if(!items.length){
+    cont.innerHTML="<div class=\"empty\"><span class=\"ei\">🔎</span><div class=\"et\">Not found in database</div>"
+      +"<div class=\"es\" style=\"margin-bottom:16px\">Add it now?</div>"
+      +"<button class=\"btnP\" onclick=\"openAddDBPre()\">+ Add \""+esc(q)+"\"</button></div>";
+    return;
+  }
+  const grouped=grp(items,i=>i.c||"Other");
+  cont.innerHTML=Object.entries(grouped).map(([cat,its])=>
+    "<div class=\"cdiv\">"+cat+"</div><div class=\"card\"><div class=\"ci\">"+
+    its.map(it=>{
+      const cnt=list.filter(l=>l.dbId===it.id).length;
+      return "<div class=\"lr\"><div style=\"flex:1;min-width:0\"><div class=\"ien\">"+esc(enName(it.n))+"</div>"
+        +(hiName(it.n)?"<div class=\"ihi\">"+esc(hiName(it.n))+"</div>":"")
+        +(it.defaultCo?"<div style=\"font-size:10px;color:var(--gold);margin-top:2px\">🏢 "+esc(it.defaultCo)+"</div>":"")
+        +(cnt?"<div class=\"ibadges\"><span class=\"badge bil\">✓ In List"+(cnt>1?" ("+cnt+")":"")+"</span></div>":"")
+        +"</div><div class=\"ra\">"
+        +"<button class=\"btnSA"+(cnt?" il":"")+"\" onclick=\"openAddList('"+it.id+"')\" >+ List</button>"
+        +"<button class=\"btnSD\" onclick=\"rmFromDB('"+it.id+"')\" >🗑</button>"
+        +"</div></div>";
+    }).join("")+
+    "</div></div>"
+  ).join("");
+}
+
+// ═══════════ LIST SHEET ═══════════
+function openAddList(dbId){
+  const di=db.find(d=>d.id===dbId);if(!di)return;
+  slItem=di;slEditId=null;_fillSheet(di,null);
+  document.getElementById("sl-sub").textContent="Add to List";
+  document.getElementById("sl-anoth").style.display="block";
+  document.getElementById("sh-list").style.display="flex";
+}
+function editEntry(lid){
+  const entry=list.find(i=>i.id===lid);if(!entry)return;
+  const di=db.find(d=>d.id===entry.dbId)||{id:entry.dbId,n:entry.n,c:entry.cat,defaultCo:""};
+  slItem=di;slEditId=lid;_fillSheet(di,entry);
+  document.getElementById("sl-sub").textContent="Save Changes";
+  document.getElementById("sl-anoth").style.display="none";
+  document.getElementById("sh-list").style.display="flex";
+}
+function _fillSheet(di,entry){
+  document.getElementById("sl-name").textContent=enName(di.n);
+  document.getElementById("sl-hint").textContent=hiName(di.n)||di.c||"";
+  document.getElementById("sl-cat").textContent=di.c||"";
+  const sel=document.getElementById("sl-csel");
+  const brands=BRANDS[di.c]||[];
+  sel.innerHTML="<option value=\"\">— Any —</option>"+brands.map(b=>"<option>"+b+"</option>").join("");
+  if(entry){
+    document.getElementById("sl-var").value=entry.variety||"";
+    document.getElementById("sl-cnt").value=entry.cnt||"";
+    document.getElementById("sl-wt").value=entry.wt||"";
+    document.getElementById("sl-wu").value=entry.wu||"g";
+    const co=entry.company||"";
+    if(brands.includes(co)){sel.value=co;document.getElementById("sl-cust").value="";}
+    else{sel.value="";document.getElementById("sl-cust").value=co;}
+  }else{
+    document.getElementById("sl-var").value="";
+    document.getElementById("sl-cnt").value="";
+    document.getElementById("sl-wt").value="";
+    document.getElementById("sl-wu").value="g";
+    const defCo=di.defaultCo||"";
+    if(brands.includes(defCo)){sel.value=defCo;document.getElementById("sl-cust").value="";}
+    else{sel.value="";document.getElementById("sl-cust").value=defCo;}
+  }
+  updatePrev();
+}
+function cselChg(){if(document.getElementById("sl-csel").value)document.getElementById("sl-cust").value="";updatePrev()}
+function updatePrev(){
+  const variety=document.getElementById("sl-var").value.trim();
+  const cnt=document.getElementById("sl-cnt").value.trim();
+  const wt=document.getElementById("sl-wt").value.trim();
+  const wu=document.getElementById("sl-wu").value;
+  const co=document.getElementById("sl-cust").value.trim()||document.getElementById("sl-csel").value;
+  const p=[];if(cnt)p.push(cnt+" pkt");if(wt&&wu)p.push(wt+wu);
+  const qs=p.length===2?p[0]+" × "+p[1]:p[0]||"";
+  const pb=document.getElementById("prevbox");
+  if(variety||qs||co){
+    pb.style.display="block";
+    const bits=[];if(variety)bits.push("🌾 "+variety);if(qs)bits.push(qs);if(co)bits.push("🏢 "+co);
+    document.getElementById("prevtxt").textContent=bits.join("  |  ");
+  }else pb.style.display="none";
+}
+function submitList(addAnother){
+  if(!slItem)return;
+  const variety=document.getElementById("sl-var").value.trim();
+  const cnt=document.getElementById("sl-cnt").value.trim();
+  const wt=document.getElementById("sl-wt").value.trim();
+  const wu=document.getElementById("sl-wu").value;
+  const co=document.getElementById("sl-cust").value.trim()||document.getElementById("sl-csel").value;
+  if(slEditId){
+    const newList=list.map(i=>i.id===slEditId?Object.assign({},i,{variety,cnt,wt,wu,company:co}):i);
+    fbSetList(newList);closeSheet("sh-list");notify("Updated ✓");
+  }else{
+    const entry={id:"li_"+Date.now()+"_"+Math.random().toString(36).slice(2,5),dbId:slItem.id,n:slItem.n,cat:slItem.c||"Other",variety,cnt,wt,wu,company:co};
+    const newList=list.concat([entry]);
+    freq=Object.assign({},freq,{[slItem.id]:(freq[slItem.id]||0)+1});
+    sv(SK.FREQ,freq);
+    fbSetList(newList);
+    if(addAnother){
+      document.getElementById("sl-var").value="";
+      document.getElementById("sl-cnt").value="";
+      document.getElementById("sl-wt").value="";
+      document.getElementById("sl-csel").value="";
+      document.getElementById("sl-cust").value="";
+      document.getElementById("prevbox").style.display="none";
+      notify("Added ✓ — enter next variety");
+    }else{closeSheet("sh-list");notify("Added to list ✓");}
+  }
+}
+function rmFromList(id){fbSetList(list.filter(i=>i.id!==id));notify("Removed")}
+
+// ═══════════ DB SHEET ═══════════
+function _popCat(){document.getElementById("db-cat").innerHTML=CATS.map(c=>"<option>"+c+"</option>").join("")}
+function openAddDB(){_popCat();document.getElementById("db-name").value="";document.getElementById("db-cat").value=CATS[0];document.getElementById("db-co").value="";document.getElementById("sh-db").style.display="flex";setTimeout(()=>document.getElementById("db-name").focus(),200)}
+function openAddDBPre(){const q=document.getElementById("dbsearch").value||"";_popCat();document.getElementById("db-name").value=q;document.getElementById("db-cat").value=CATS[0];document.getElementById("db-co").value="";document.getElementById("sh-db").style.display="flex"}
+function submitDB(){
+  const n=document.getElementById("db-name").value.trim();
+  const c=document.getElementById("db-cat").value;
+  const defaultCo=document.getElementById("db-co").value.trim();
+  if(!n)return;
+  db=[...db,{id:"u_"+Date.now(),n,c,defaultCo}];
+  sv(SK.DB,db);closeSheet("sh-db");renderDB();notify("Added to database ✓");
+}
+function rmFromDB(id){
+  db=db.filter(d=>d.id!==id);
+  const f=Object.assign({},freq);delete f[id];freq=f;
+  sv(SK.DB,db);sv(SK.FREQ,freq);
+  fbSetList(list.filter(l=>l.dbId!==id));
+  renderDB();notify("Removed from database");
+}
+
+// ═══════════ CLEAR ═══════════
+function askClear(){document.getElementById("clrmsg").textContent="This will remove all "+list.length+" item"+(list.length!==1?"s":"")+" from the shared list for everyone. This cannot be undone.";document.getElementById("sh-clr").style.display="flex"}
+function clearList(){fbSetList([]);closeSheet("sh-clr");notify("List cleared")}
+
+// ═══════════ SHEETS ═══════════
+function closeSheet(id){document.getElementById(id).style.display="none"}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")["sh-list","sh-db","sh-clr"].forEach(closeSheet)});
+
+// ═══════════ PROFILE ═══════════
+function renderProfile(){
+  const hasSaved=profile.name.trim();
+  document.getElementById("prof-view").style.display=hasSaved?"block":"none";
+  document.getElementById("prof-edit").style.display=hasSaved?"none":"block";
+  if(hasSaved){
+    document.getElementById("pv-name").textContent=profile.name;
+    document.getElementById("pv-phone").textContent=profile.phone||"";
+    document.getElementById("pv-addr").textContent=profile.address||"";
+  }else{
+    document.getElementById("pe-name").value=profile.name||"";
+    document.getElementById("pe-phone").value=profile.phone||"";
+    document.getElementById("pe-addr").value=profile.address||"";
+  }
+  if(session)document.getElementById("prof-family-name").textContent="Family: "+session.familyId;
+}
+function showProfEdit(){
+  document.getElementById("pe-name").value=profile.name||"";
+  document.getElementById("pe-phone").value=profile.phone||"";
+  document.getElementById("pe-addr").value=profile.address||"";
+  document.getElementById("prof-view").style.display="none";
+  document.getElementById("prof-edit").style.display="block";
+}
+function saveProfile(){
+  const name=document.getElementById("pe-name").value.trim();
+  if(!name){notify("Please enter your name");return}
+  profile={name,phone:document.getElementById("pe-phone").value.trim(),address:document.getElementById("pe-addr").value.trim()};
+  sv(SK.PROF,profile);renderProfile();notify("Profile saved ✓");
+}
+
+// ═══════════ PDF ═══════════
+function dlPDF(){
+  if(!list.length){notify("List is empty!");return}
+  if(typeof window.jspdf==="undefined"){notify("PDF library loading, try again…");return}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  const PW=210,ML=14,MR=14,TW=PW-ML-MR;
+  const now=new Date();
+  const ds=now.getDate().toString().padStart(2,"0")+"-"+(now.getMonth()+1).toString().padStart(2,"0")+"-"+now.getFullYear();
+  const dateLabel=now.toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"});
+  const custName=(profile.name||"").trim();
+  const custPhone=(profile.phone||"").trim();
+  const custAddr=(profile.address||"").trim();
+  const bannerH=custName?36:28;
+  doc.setFillColor(232,105,42);doc.rect(0,0,PW,bannerH-6,"F");
+  doc.setFillColor(201,149,42);doc.rect(0,bannerH-6,PW,6,"F");
+  doc.setTextColor(255,255,255);doc.setFontSize(20);doc.setFont("helvetica","bold");
+  doc.text("Grocerra",PW/2,11,{align:"center"});
+  doc.setFontSize(8);doc.setFont("helvetica","normal");
+  doc.text("SHOPPING LIST",PW/2,17,{align:"center"});
+  doc.text(dateLabel,PW/2,bannerH-10,{align:"center"});
+  if(custName){
+    doc.setFillColor(255,245,235);doc.rect(0,bannerH,PW,14,"F");
+    doc.setTextColor(92,58,46);doc.setFontSize(10);doc.setFont("helvetica","bold");
+    doc.text(custName,ML,bannerH+6);
+    let infoLine="";
+    if(custPhone)infoLine+=custPhone;
+    if(custAddr)infoLine+=(infoLine?" | ":"")+custAddr;
+    if(infoLine){doc.setFontSize(8);doc.setFont("helvetica","normal");doc.setTextColor(130,90,70);doc.text(infoLine,ML,bannerH+11,{maxWidth:TW});}
+  }
+  let y=bannerH+(custName?20:8);
+  function checkPage(need){if(y+need>285){doc.addPage();y=14;}}
+  const grouped=grp(list,i=>i.cat||"Other");
+  let total=0;
+  Object.entries(grouped).forEach(([cat,its])=>{
+    checkPage(10);
+    doc.setFillColor(254,240,231);doc.rect(ML,y-4,TW,7,"F");
+    doc.setDrawColor(232,157,130);doc.setLineWidth(0.3);doc.rect(ML,y-4,TW,7,"D");
+    doc.setTextColor(179,74,16);doc.setFontSize(8);doc.setFont("helvetica","bold");
+    doc.text(cat.toUpperCase(),ML+3,y+0.5);y+=7;
+    its.forEach(it=>{
+      total++;
+      const en=enName(it.n),qs=qtyStr(it)||"",co=it.company||"",va=it.variety||"";
+      const vaClean=va.replace(/[^\x00-\x7F]/g,"").trim();
+      const extraLines=(va?1:0)+(co?1:0);
+      const rowH=extraLines===0?10:extraLines===1?14:18;
+      checkPage(rowH+2);
+      if(total%2===0){doc.setFillColor(252,248,244);doc.rect(ML,y-3.5,TW,rowH,"F");}
+      doc.setTextColor(201,149,42);doc.setFontSize(9);doc.setFont("helvetica","bold");doc.text(total+".",ML+1,y+1.5);
+      doc.setTextColor(30,15,8);doc.setFontSize(12);doc.setFont("helvetica","bold");doc.text(en,ML+9,y+2);
+      let ly=y+7;
+      if(va&&vaClean){doc.setTextColor(107,78,170);doc.setFontSize(9);doc.setFont("helvetica","bolditalic");doc.text("~ "+vaClean,ML+9,ly);ly+=4.5;}
+      if(co){doc.setTextColor(46,107,79);doc.setFontSize(9);doc.setFont("helvetica","bold");doc.text("Co: "+co,ML+9,ly);}
+      if(qs){
+        const qw=doc.getTextWidth(qs)+7,qx=PW-MR-qw,qy=y-2.5;
+        doc.setFillColor(254,240,231);doc.roundedRect(qx,qy,qw,6.5,1.5,1.5,"F");
+        doc.setDrawColor(232,105,42);doc.setLineWidth(0.3);doc.roundedRect(qx,qy,qw,6.5,1.5,1.5,"D");
+        doc.setTextColor(232,105,42);doc.setFontSize(9);doc.setFont("helvetica","bold");doc.text(qs,qx+3.5,y+1.8);
+      }
+      doc.setDrawColor(232,213,196);doc.setLineWidth(0.2);doc.line(ML,y+rowH-2,PW-MR,y+rowH-2);
+      y+=rowH;
+    });
+    y+=3;
+  });
+  checkPage(18);
+  doc.setFillColor(254,240,231);doc.rect(0,y,PW,18,"F");
+  const pillW=46,pillX=(PW-pillW)/2;
+  doc.setFillColor(232,105,42);doc.roundedRect(pillX,y+3,pillW,7,3.5,3.5,"F");
+  doc.setTextColor(255,255,255);doc.setFontSize(9);doc.setFont("helvetica","bold");
+  doc.text(total+" item"+(total!==1?"s":"")+" total",PW/2,y+8,{align:"center"});
+  doc.setTextColor(155,112,96);doc.setFontSize(7);doc.setFont("helvetica","normal");
+  doc.text("Generated with Grocerra",PW/2,y+15,{align:"center"});
+  const safeName=(custName?custName.replace(/[^a-zA-Z0-9_\- ]/g,"").trim().replace(/\s+/g,"_"):"Grocerra");
+  doc.save(safeName+"_"+ds+".pdf");
+  notify("PDF saved ✓");
+}
+
+// ═══════════ INIT ═══════════
+document.getElementById("hdr").style.display="none";
+document.getElementById("nav").style.display="none";
+document.getElementById("body").style.display="none";
+document.getElementById("join-screen").style.display="none"; // hidden until Firebase ready
+
+function onFirebaseReady(){
+  if(session){
+    startApp();
+  } else {
+    document.getElementById("join-screen").style.display="flex";
+  }
+  renderProfile();
+}
+
+// Firebase module script fires 'fbReady' when done; if already done, run immediately
+if(window._fbReady){ onFirebaseReady(); }
+else { document.addEventListener("fbReady", onFirebaseReady, {once:true}); }
+
+</script>
+</body>
+</html>
